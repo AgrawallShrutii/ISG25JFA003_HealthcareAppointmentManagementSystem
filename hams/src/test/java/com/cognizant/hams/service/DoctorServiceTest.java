@@ -1,5 +1,6 @@
 package com.cognizant.hams.service;
 
+import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
 import com.cognizant.hams.dto.Request.DoctorDTO;
 import com.cognizant.hams.dto.Response.DoctorResponseDTO;
 import com.cognizant.hams.entity.Doctor;
@@ -39,12 +40,12 @@ public class DoctorServiceTest {
     private DoctorServiceImpl doctorService;
 
     private Doctor doctor;
-    private DoctorDTO doctorDTO;
+    private AdminUserRequestDTO doctorDTO;
     private DoctorResponseDTO doctorResponseDTO;
 
     @BeforeEach
     void setUp() {
-        doctorDTO = new DoctorDTO("Dr. Strange", "MD", "Neurosurgery", "177A Bleecker Street", 10, "5551234567", "strange@sanctum.com");
+        doctorDTO = new AdminUserRequestDTO("Dr. Strange", "MD", "Neurosurgery", "177A Bleecker Street", 10, "5551234567", "strange@sanctum.com");
         doctor = new Doctor();
         doctor.setDoctorId(1L);
         doctor.setDoctorName("Dr. Strange");

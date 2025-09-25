@@ -11,12 +11,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class PatientResponseDTO {
 
-
-
-    //fields that we are showing to client
-    //this dto we are using to send complete patient data back to client
-
-
     private Long patientId;
     private String name;
     private String email;
@@ -25,7 +19,6 @@ public class PatientResponseDTO {
     private String gender;
     private LocalDate dateOfBirth;
     private String bloodGroup;
-//    private String userId;
-//    private String status;
+
 
 }

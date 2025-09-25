@@ -1,10 +1,8 @@
 package com.cognizant.hams.controller;
 
 import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Request.AuthRequest;
-import com.cognizant.hams.dto.Response.AuthResponse;
 import com.cognizant.hams.dto.Response.UserResponseDTO;
-import com.cognizant.hams.entity.User;
+import com.cognizant.hams.entity.Doctor;
 import com.cognizant.hams.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,19 +27,17 @@ public class AdminController {
     @PostMapping("/create-user")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> createPrivilegedUser(@RequestBody AdminUserRequestDTO request) {
-        /*User newUser = new User();
-
-        newUser.setUsername(request.getUsername());
-        newUser.setPassword(request.getPassword());*/
-
-       // User createdUser = authService.createPrivilegedUser(newUser, request.getRoleName());
-        User createdUser = authService.createPrivilegedUser(request);
-
-        // Create and return the response DTO
+        Doctor createdUser = authService.createPrivilegedUser(request);
         UserResponseDTO responseDTO = new UserResponseDTO();
-        responseDTO.setUserId(createdUser.getUserId());
-        responseDTO.setUsername(createdUser.getUsername());
-        responseDTO.setRole(createdUser.getRole());
+        responseDTO.setDoctorId(createdUser.getDoctorId());
+        responseDTO.setDoctorName(createdUser.getDoctorName());
+        responseDTO.setEmail(createdUser.getEmail());
+        responseDTO.setClinicAddress(createdUser.getClinicAddress());
+        responseDTO.setQualification(createdUser.getQualification());
+        responseDTO.setSpecialization(createdUser.getSpecialization());
+        responseDTO.setContactNumber(createdUser.getContactNumber());
+        responseDTO.setYearOfExperience(createdUser.getYearOfExperience());
+
 
         return ResponseEntity.ok(responseDTO);
     }

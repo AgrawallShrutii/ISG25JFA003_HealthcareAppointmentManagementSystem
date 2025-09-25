@@ -1,11 +1,15 @@
 package com.cognizant.hams.dto.Response;
 
 import lombok.Data;
-import com.cognizant.hams.entity.Role;
 
 @Data
 public class UserResponseDTO {
-    private String userId;
-    private String username;
-    private Role role; // You might want to map this to a RoleResponseDTO
+    private Long doctorId;
+    private String doctorName;
+    private String qualification;
+    private String specialization;
+    private String clinicAddress;
+    private Integer yearOfExperience;
+    private String contactNumber;
+    private String email;
 }

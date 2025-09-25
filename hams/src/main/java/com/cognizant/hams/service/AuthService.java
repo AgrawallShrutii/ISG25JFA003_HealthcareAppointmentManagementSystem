@@ -60,14 +60,12 @@ public class AuthService {
         return jwtTokenUtil.generateToken(userDetails);
     }
 
-    // This method is for self-registration of a new user with a default role.
-    public User registerNewUser(AuthRequest requestedUser) {
+    public Patient registerNewUser(AuthRequest requestedUser) {
         Optional<User> existingUser = userRepository.findByUsername(requestedUser.getUsername());
         if (existingUser.isPresent()) {
             throw new UserAlreadyExistsException("User with this username already exists.");
         }
 
-        // Find the default "PATIENT" role. This role MUST exist in your database.
         Role role = roleRepository.findByName("PATIENT")
                 .orElseThrow(() -> new RuntimeException("Default role 'PATIENT' not found. Please seed the database."));
         User newUser = new User();
@@ -85,17 +83,12 @@ public class AuthService {
         patient.setGender(requestedUser.getGender());
         patient.setBloodGroup(requestedUser.getBloodGroup());
         patient.setDateOfBirth(requestedUser.getDateOfBirth());
-        patientRepository.save(patient);
+        return patientRepository.save(patient);
 
-
-
-        return userRepository.save(newUser);
     }
-@Transactional
-    // This method is for creating privileged users (e.g., Doctors, Admins) by an Admin.
-    //public User createPrivilegedUser(User newUser, String roleName)
-    public User createPrivilegedUser(AdminUserRequestDTO doctorDTO)
-     {
+    @Transactional
+    public Doctor createPrivilegedUser(AdminUserRequestDTO doctorDTO)
+    {
         Optional<User> existingUser = userRepository.findByUsername(doctorDTO.getUsername());
         if (existingUser.isPresent()) {
             throw new UserAlreadyExistsException("User with this username already exists.");
@@ -104,25 +97,24 @@ public class AuthService {
         Role role = roleRepository.findByName(doctorDTO.getRoleName().toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Role '" + doctorDTO.getRoleName() + "' not found."));
 
-         User newUser = new User();
+        User newUser = new User();
 
-         newUser.setUsername(doctorDTO.getUsername());
-         newUser.setPassword(doctorDTO.getPassword());
-         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-         newUser.setRole(role);
-         User savedUser=userRepository.save(newUser);
+        newUser.setUsername(doctorDTO.getUsername());
+        newUser.setPassword(doctorDTO.getPassword());
+        newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
+        newUser.setRole(role);
+        User savedUser=userRepository.save(newUser);
 
-         Doctor doctor=new Doctor();
-         doctor.setUser(savedUser);
-         doctor.setContactNumber(doctorDTO.getContactNumber());
-         doctor.setEmail(doctorDTO.getEmail());
-         doctor.setDoctorName(doctorDTO.getDoctorName());
-         doctor.setQualification(doctorDTO.getQualification());
-         doctor.setClinicAddress(doctorDTO.getClinicAddress());
-         doctor.setYearOfExperience(doctorDTO.getYearOfExperience());
-         doctor.setSpecialization(doctorDTO.getSpecialization());
-         Doctor savedDoctor=doctorRepository.save(doctor);
-
-        return savedUser;
+        Doctor doctor=new Doctor();
+        doctor.setUser(savedUser);
+        doctor.setContactNumber(doctorDTO.getContactNumber());
+        doctor.setEmail(doctorDTO.getEmail());
+        doctor.setDoctorName(doctorDTO.getDoctorName());
+        doctor.setQualification(doctorDTO.getQualification());
+        doctor.setClinicAddress(doctorDTO.getClinicAddress());
+        doctor.setYearOfExperience(doctorDTO.getYearOfExperience());
+        doctor.setSpecialization(doctorDTO.getSpecialization());
+        Doctor savedDoctor = doctorRepository.save(doctor);
+        return  savedDoctor;
     }
 }

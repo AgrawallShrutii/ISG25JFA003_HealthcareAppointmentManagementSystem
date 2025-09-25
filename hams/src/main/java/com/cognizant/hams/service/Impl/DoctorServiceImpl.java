@@ -1,13 +1,9 @@
 package com.cognizant.hams.service.Impl;
 
 import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Request.DoctorAvailabilityDTO;
-import com.cognizant.hams.dto.Response.DoctorDetailsResponseDTO;
-import com.cognizant.hams.dto.Response.DoctorAvailabilityResponseDTO;
 import com.cognizant.hams.dto.Request.DoctorDTO;
 import com.cognizant.hams.dto.Response.DoctorResponseDTO;
 import com.cognizant.hams.entity.Doctor;
-import com.cognizant.hams.entity.DoctorAvailability;
 import com.cognizant.hams.entity.User;
 import com.cognizant.hams.exception.APIException;
 import com.cognizant.hams.exception.ResourceNotFoundException;
@@ -17,10 +13,8 @@ import com.cognizant.hams.repository.DoctorRepository;
 import com.cognizant.hams.repository.UserRepository;
 import com.cognizant.hams.service.DoctorService;
 import com.cognizant.hams.service.NotificationService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,20 +37,9 @@ public class DoctorServiceImpl implements DoctorService {
 
     private final NotificationService notificationService;
 
-//    private SpecializationRepository specializationRepository;
-
-//    public DoctorServiceImpl(DoctorRepository doctorRepository, SpecializationRepository specializationRepository){
-//        this.doctorRepository = doctorRepository;
-//        this.specializationRepository = specializationRepository;
-//    }
-
-    // Create Doctor
 
     @Override
     public DoctorResponseDTO createDoctor(AdminUserRequestDTO doctorDTO) {
-        // Option A: If you're creating a new doctor, make sure the ID is null
-        // and Hibernate will insert it.
-        // If an ID is present, treat it as an update.
         Doctor doctor = modelMapper.map(doctorDTO,Doctor.class);
         if (doctorRepository.existsByEmailOrContactNumber(doctor.getEmail(), doctor.getContactNumber())) {
             throw new APIException("A doctor with the provided email or contact number already exists.");
@@ -165,10 +148,4 @@ public class DoctorServiceImpl implements DoctorService {
                 .map(doctor -> modelMapper.map(doctor,DoctorResponseDTO.class))
                 .collect(Collectors.toList());
     }
-
-    //Doctor Availability CURD Operations:
-
-
-
-
 }

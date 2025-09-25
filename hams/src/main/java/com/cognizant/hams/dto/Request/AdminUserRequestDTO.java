@@ -33,6 +33,4 @@ public class AdminUserRequestDTO {
     @Email(message = "Invalid Email")
     private String email;
 
-
-
 }
