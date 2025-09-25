@@ -10,7 +10,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientResponseDTO {
-
     private Long patientId;
     private String name;
     private String email;
@@ -19,6 +18,4 @@ public class PatientResponseDTO {
     private String gender;
     private LocalDate dateOfBirth;
     private String bloodGroup;
-
-
 }

@@ -15,8 +15,10 @@ import java.time.LocalDate;
 public class AuthRequest {
     private String username;
     private String password;
+
     @NotBlank(message = "Name is required")
     private String name;
+
     @Past
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @JsonProperty("dateOfBirth")

@@ -1,6 +1,7 @@
 package com.cognizant.hams.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 
 import java.util.Date;
@@ -76,6 +78,22 @@ public class MyGlobalExceptionHandler {
         String message = e.getMessage();
         APIResponse apiResponse = new APIResponse(message, false);
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
+//    @ExceptionHandler(DataIntegrityViolationException.class)
+//    public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+//        String errorMessage = "A database constraint was violated, possibly due to duplicate data.";
+//
+//        if (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry")) {
+//            errorMessage = "This record already exists. Please check for duplicate information.";
+//        }
+//        return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
+//    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<String> handleNotFoundException(NoHandlerFoundException ex) {
+        String errorMessage = "The requested resource was not found on the server.";
+        return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
     }
 
 }

@@ -31,7 +31,4 @@ public class DoctorDTO {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid Email")
     private String email;
-
-
-
 }

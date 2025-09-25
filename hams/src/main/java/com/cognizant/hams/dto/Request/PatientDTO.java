@@ -36,8 +36,6 @@ private String name;
     @Column(unique = true)
     private String email;
 
- //   private String status;
-
     @NotBlank(message = "Address is required")
     private String address;
 

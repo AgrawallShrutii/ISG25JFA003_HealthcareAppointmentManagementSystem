@@ -8,7 +8,5 @@ public class HamsApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(HamsApplication.class, args);
-
 	}
-
 }

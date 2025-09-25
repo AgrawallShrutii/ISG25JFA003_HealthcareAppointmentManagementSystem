@@ -29,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DoctorServiceTest {
+class DoctorServiceTest {
 
     @Mock
     private DoctorRepository doctorRepository;

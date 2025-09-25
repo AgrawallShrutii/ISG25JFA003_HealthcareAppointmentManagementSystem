@@ -55,7 +55,7 @@ public class DoctorControllerTest {
         DoctorDTO doctorToCreate = new DoctorDTO("Dr. Strange", "MD", "Neurosurgery", "Sanctum", 10, "5551234567", "strange@sanctum.com");
         DoctorResponseDTO savedDoctor = new DoctorResponseDTO(1L, "Dr. Strange", "Neurosurgery", "MD", "Sanctum", 10, "strange@sanctum.com", "5551234567");
 
-        Mockito.when(doctorService.createDoctor(any(DoctorDTO.class))).thenReturn(savedDoctor);
+        Mockito.when(doctorService.createDoctor(any(com.cognizant.hams.dto.Request.AdminUserRequestDTO.class))).thenReturn(savedDoctor);
 
         mockMvc.perform(post("/api/doctors")
                         .contentType(MediaType.APPLICATION_JSON)

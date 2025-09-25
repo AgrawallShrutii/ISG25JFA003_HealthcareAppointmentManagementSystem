@@ -2,15 +2,13 @@ package com.cognizant.hams.dto.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.sql.Date;
 import java.sql.Time;
 
+
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class DoctorDetailsResponseDTO {
+public class DoctorAndAvailabilityResponseDTO {
     private Long doctorId;
     private String contactNumber;
     private String doctorName;
@@ -21,4 +19,8 @@ public class DoctorDetailsResponseDTO {
 
     private String qualification;
     private Integer yearOfExperience;
+    private Time startTime;
+    private Time endTime;
+    private Date availableDate;
+    private boolean available;
 }

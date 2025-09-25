@@ -83,8 +83,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
 
-        // Ensure the ID and version are null for a new entity.
-        // This prevents ModelMapper from carrying over a value from the DTO.
         appointment.setAppointmentId(null);
         appointment.setVersion(null);
 
@@ -122,9 +120,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (appointmentUpdateDTO.getReason() != null) {
             existingAppointment.setReason(appointmentUpdateDTO.getReason());
         }
-
         Appointment updatedAppointment = appointmentRepository.save(existingAppointment);
-
         return modelMapper.map(updatedAppointment, AppointmentResponseDTO.class);
     }
 

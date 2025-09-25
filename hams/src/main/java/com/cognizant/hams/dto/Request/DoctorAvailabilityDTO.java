@@ -19,17 +19,14 @@ public class DoctorAvailabilityDTO {
 
     @FutureOrPresent(message = "Availability date must be in the present or future")
     @NotNull(message = "Availability date is required")
-    @Column(name = "available_date", nullable = false)
     private LocalDate availableDate;
 
     @NotNull(message = "Start time is required")
     @JsonFormat(pattern = "HH:mm")
-    @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
     @NotNull(message = "End time is required")
     @JsonFormat(pattern = "HH:mm")
-    @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
     private boolean available;

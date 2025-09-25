@@ -1,7 +1,5 @@
 package com.cognizant.hams.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,19 +8,18 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity
-@Table(name = "patients")
+@Table(name = "patients", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"email"}),
+        @UniqueConstraint(columnNames = {"contactNumber"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Patient {
-    // Inside Patient.java
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long patientId;
@@ -31,12 +28,10 @@ public class Patient {
     @JoinColumn(name = "userId")
     private User user;
 
-    @NotBlank(message = "Name is required")
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Past
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    @JsonProperty("dateOfBirth")
     private LocalDate dateOfBirth;
 
     private String gender;
@@ -49,9 +44,8 @@ public class Patient {
     @Column(unique = true)
     private String email;
 
-//    private String status;
-
     @NotBlank(message = "Address is required")
-    private String Address;
+    private String address;
+
     private String bloodGroup;
 }

@@ -24,7 +24,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Create roles if they don't exist
-        Role patientRole = roleRepository.findByName("PATIENT").orElseGet(() -> {
+        Role role = roleRepository.findByName("PATIENT").orElseGet(() -> {
             Role newRole = new Role();
             newRole.setName("PATIENT");
             newRole.setDescription("Standard user role for patients.");

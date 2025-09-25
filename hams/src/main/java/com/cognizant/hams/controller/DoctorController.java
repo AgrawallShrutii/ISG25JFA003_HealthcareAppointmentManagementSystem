@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/doctors")
+@RequestMapping("/api/doctor")
 @RequiredArgsConstructor
 public class DoctorController {
 
@@ -32,13 +32,14 @@ public class DoctorController {
     }
 
     @GetMapping("/{doctorId}")
+    @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<DoctorResponseDTO> getDoctorById(@PathVariable("doctorId") Long doctorId){
         DoctorResponseDTO doctor = doctorService.getDoctorById(doctorId);
         return new ResponseEntity<>(doctor,HttpStatus.OK);
 
     }
 
-    @GetMapping("/all")
+    @GetMapping("/get-all-doctors")
     public ResponseEntity<List<DoctorResponseDTO>> getAllDoctor(){
         List<DoctorResponseDTO> doctors = doctorService.getAllDoctor();
         return new ResponseEntity<>(doctors,HttpStatus.OK);
@@ -59,13 +60,13 @@ public class DoctorController {
         return new ResponseEntity<>(deleteDoctor, HttpStatus.OK);
     }
 
-    @GetMapping("/specializations")
+    @GetMapping("/doctor-specialization")
     public ResponseEntity<List<DoctorResponseDTO>> searchDoctorsBySpecialization(@RequestParam("specialization") String specialization){
         List<DoctorResponseDTO> doctors = doctorService.searchDoctorsBySpecialization(specialization);
         return new ResponseEntity<>(doctors, HttpStatus.OK);
     }
 
-    @GetMapping("/doctorName")
+    @GetMapping("/doctor-name")
     public ResponseEntity<List<DoctorResponseDTO>> searchDoctorsByName(@RequestParam("name") String name){
         List<DoctorResponseDTO> doctors = doctorService.searchDoctorsByName(name);
         return new ResponseEntity<>(doctors, HttpStatus.OK);

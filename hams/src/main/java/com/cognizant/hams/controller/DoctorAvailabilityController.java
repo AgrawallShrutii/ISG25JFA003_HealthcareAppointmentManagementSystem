@@ -1,6 +1,7 @@
 package com.cognizant.hams.controller;
 
 import com.cognizant.hams.dto.Request.DoctorAvailabilityDTO;
+import com.cognizant.hams.dto.Response.DoctorAndAvailabilityResponseDTO;
 import com.cognizant.hams.dto.Response.DoctorAvailabilityResponseDTO;
 import com.cognizant.hams.dto.Response.DoctorDetailsResponseDTO;
 import com.cognizant.hams.service.DoctorAvailabilityService;
@@ -39,14 +40,14 @@ public class DoctorAvailabilityController {
     }
 
     @GetMapping("/doctor-availability")
-    public ResponseEntity<List<DoctorAvailabilityResponseDTO>> getAvailableDoctor(@RequestParam("name") String doctorName){
-        List<DoctorAvailabilityResponseDTO> doctorAndAvailabilityResponseDTOList = doctorAvailabilityService.getAvailableDoctor(doctorName);
+    public ResponseEntity<List<DoctorAndAvailabilityResponseDTO>> getAvailableDoctor(@RequestParam("name") String doctorName){
+        List<DoctorAndAvailabilityResponseDTO> doctorAndAvailabilityResponseDTOList = doctorAvailabilityService.getAvailableDoctor(doctorName);
         return new ResponseEntity<>(doctorAndAvailabilityResponseDTOList, HttpStatus.OK);
     }
 
     @GetMapping("/searchDoctor")
-    public ResponseEntity<List<DoctorAvailabilityResponseDTO>> searchDoctorByName(@RequestParam("name") String doctorName){
-        List<DoctorAvailabilityResponseDTO> doctorAndAvailabilityResponseDTOList = doctorAvailabilityService.searchDoctorByName(doctorName);
+    public ResponseEntity<List<DoctorAndAvailabilityResponseDTO>> searchDoctorByName(@RequestParam("name") String doctorName){
+        List<DoctorAndAvailabilityResponseDTO> doctorAndAvailabilityResponseDTOList = doctorAvailabilityService.searchDoctorByName(doctorName);
         return new ResponseEntity<>(doctorAndAvailabilityResponseDTOList, HttpStatus.OK);
     }
 

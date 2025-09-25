@@ -46,8 +46,4 @@ public class Doctor {
     @NotBlank(message = "Clinic address is required")
     @Size(max = 255, message = "Address cannot exceed 255 characters")
     private String clinicAddress;
-
-
 }
-
-
