@@ -1,8 +1,8 @@
-package com.cognizant.hams.service.Impl;
+package com.cognizant.hams.service.impl;
 
-import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Request.DoctorDTO;
-import com.cognizant.hams.dto.Response.DoctorResponseDTO;
+import com.cognizant.hams.dto.request.AdminUserRequestDTO;
+import com.cognizant.hams.dto.request.DoctorDTO;
+import com.cognizant.hams.dto.response.DoctorResponseDTO;
 import com.cognizant.hams.entity.Doctor;
 import com.cognizant.hams.entity.User;
 import com.cognizant.hams.exception.APIException;
@@ -15,10 +15,11 @@ import com.cognizant.hams.service.DoctorService;
 import com.cognizant.hams.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,12 +58,14 @@ public class DoctorServiceImpl implements DoctorService {
     // Get Doctor By I'd:
 
     @Override
-    public DoctorResponseDTO getDoctorById(Long doctorId) {
-        Optional<Doctor> doctorOptional = doctorRepository.findByDoctorId(doctorId);
-        if(doctorOptional.isEmpty()){
-            throw new APIException("Doctor with doctorId " + doctorId + " does not exist.");
-        }
-        return modelMapper.map(doctorOptional,DoctorResponseDTO.class);
+    public DoctorResponseDTO getDoctor() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Doctor doctor = (Doctor) doctorRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "username", currentUsername));
+
+        return modelMapper.map(doctor, DoctorResponseDTO.class);
     }
 
     // Get All Doctor

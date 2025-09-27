@@ -1,4 +1,4 @@
-package com.cognizant.hams.dto.Request;
+package com.cognizant.hams.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

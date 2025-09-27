@@ -1,12 +1,20 @@
-package com.cognizant.hams.service.Impl;
+package com.cognizant.hams.service.impl;
 
-import com.cognizant.hams.dto.Response.NotificationResponseDTO;
+import com.cognizant.hams.dto.response.NotificationResponseDTO;
 import com.cognizant.hams.entity.Appointment;
+import com.cognizant.hams.entity.Doctor;
 import com.cognizant.hams.entity.Notification;
+import com.cognizant.hams.entity.Patient;
+import com.cognizant.hams.exception.ResourceNotFoundException;
+import com.cognizant.hams.repository.DoctorRepository;
 import com.cognizant.hams.repository.NotificationRepository;
+import com.cognizant.hams.repository.PatientRepository;
 import com.cognizant.hams.service.NotificationService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +26,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final ModelMapper modelMapper;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
 
     @Override
     public void notifyDoctorOnAppointmentRequest(Appointment appointment) {
@@ -28,7 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setTitle("New appointment request");
         notification.setMessage("Patient " + appointment.getPatient().getName() +
                 " request an appointment on " + appointment.getAppointmentDate() +
-                " from " + appointment.getStartTime() + "to " + appointment.getEndTime());
+                " from " + appointment.getStartTime() + " to " + appointment.getEndTime());
         notificationRepository.save(notification);
     }
 
@@ -50,35 +60,52 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<NotificationResponseDTO> getNotificationForDoctor(Long doctorId) {
-        List<Notification> notifications = notificationRepository.findByRecipientTypeAndRecipientIdOrderByCreatedAtDesc(Notification.RecipientType.DOCTOR, doctorId);
+    public List<NotificationResponseDTO> getNotificationForDoctor() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Doctor doctor = (Doctor) doctorRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "username", currentUsername));
+
+        List<Notification> notifications = notificationRepository
+                .findByRecipientTypeAndRecipientIdOrderByCreatedAtDesc(Notification.RecipientType.DOCTOR, doctor.getDoctorId());
+
         return notifications.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<NotificationResponseDTO> getNotificationForPatient(Long patientId) {
-        // Find notifications for the patient, ordered by creation date
-        List<Notification> notifications = notificationRepository.findByRecipientTypeAndRecipientIdOrderByCreatedAtDesc(Notification.RecipientType.PATIENT, patientId);
+    public List<NotificationResponseDTO> getNotificationForPatient() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
 
-        // Map the list of entities to a list of DTOs to avoid serialization errors
+        Patient patient = (Patient) patientRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", "username", currentUsername));
+
+        List<Notification> notifications = notificationRepository
+                .findByRecipientTypeAndRecipientIdOrderByCreatedAtDesc(Notification.RecipientType.PATIENT, patient.getPatientId());
+
         return notifications.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+
     @Override
+    @Transactional
     public void markAsRead(Long notificationId) {
-        notificationRepository.findById(notificationId).ifPresent(n -> {
-            n.setRead(true);
-            notificationRepository.save(n);
-        });
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", "id", notificationId));
+
+        if (!notification.isRead()) {
+            notification.setRead(true);
+            notificationRepository.save(notification);
+        }
     }
 
     private NotificationResponseDTO mapToDTO(Notification notification) {
         NotificationResponseDTO dto = modelMapper.map(notification, NotificationResponseDTO.class);
-        // Manually set appointmentId to avoid lazy-loading proxy error
         if (notification.getAppointment() != null) {
             dto.setAppointmentId(notification.getAppointment().getAppointmentId());
         }

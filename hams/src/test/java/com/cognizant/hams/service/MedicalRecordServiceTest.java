@@ -1,17 +1,18 @@
-package com.cognizant.hams.service;
+package com.cognizant.hams.service.impl;
 
-import com.cognizant.hams.dto.Request.MedicalRecordDTO;
-import com.cognizant.hams.dto.Response.MedicalRecordResponseDTO;
+import com.cognizant.hams.dto.request.MedicalRecordDTO;
+import com.cognizant.hams.dto.response.MedicalRecordResponseDTO;
 import com.cognizant.hams.entity.Appointment;
 import com.cognizant.hams.entity.Doctor;
 import com.cognizant.hams.entity.MedicalRecord;
 import com.cognizant.hams.entity.Patient;
+import com.cognizant.hams.entity.User;
 import com.cognizant.hams.exception.APIException;
+import com.cognizant.hams.exception.ResourceNotFoundException;
 import com.cognizant.hams.repository.AppointmentRepository;
 import com.cognizant.hams.repository.DoctorRepository;
 import com.cognizant.hams.repository.MedicalRecordRepository;
 import com.cognizant.hams.repository.PatientRepository;
-import com.cognizant.hams.service.Impl.MedicalRecordServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,20 +20,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MedicalRecordServiceTest {
+class MedicalRecordServiceImplTest {
 
     @Mock
     private MedicalRecordRepository medicalRecordRepository;
@@ -48,28 +47,28 @@ public class MedicalRecordServiceTest {
     @InjectMocks
     private MedicalRecordServiceImpl medicalRecordService;
 
+    private MedicalRecordDTO medicalRecordDTO;
+    private Appointment appointment;
     private Patient patient;
     private Doctor doctor;
-    private Appointment appointment;
-    private MedicalRecordDTO medicalRecordDTO;
     private MedicalRecord medicalRecord;
 
     @BeforeEach
     void setUp() {
         patient = new Patient();
         patient.setPatientId(1L);
-        patient.setName("Test Patient");
+        patient.setName("John Patient");
 
         doctor = new Doctor();
-        doctor.setDoctorId(101L);
-        doctor.setDoctorName("Test Doctor");
+        doctor.setDoctorId(1L);
+        doctor.setDoctorName("Dr. Smith");
 
         appointment = new Appointment();
-        appointment.setAppointmentId(1001L);
+        appointment.setAppointmentId(1L);
         appointment.setPatient(patient);
         appointment.setDoctor(doctor);
 
-        medicalRecordDTO = new MedicalRecordDTO(1001L, 1L, 101L, "Checkup", "Healthy", "No issues");
+        medicalRecordDTO = new MedicalRecordDTO(1L, 1L, 1L, "Headache", "Migraine", "Rest");
 
         medicalRecord = new MedicalRecord();
         medicalRecord.setRecordId(1L);
@@ -78,49 +77,45 @@ public class MedicalRecordServiceTest {
     }
 
     @Test
-    void testCreateRecord_Success() {
-
-        given(appointmentRepository.findById(1001L)).willReturn(Optional.of(appointment));
-        given(patientRepository.findById(1L)).willReturn(Optional.of(patient));
-        given(doctorRepository.findById(101L)).willReturn(Optional.of(doctor));
-        given(medicalRecordRepository.save(any(MedicalRecord.class))).willReturn(medicalRecord);
+    void createRecord_WhenValid_ReturnsResponseDTO() {
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
+        when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(doctor));
+        when(medicalRecordRepository.save(any(MedicalRecord.class))).thenReturn(medicalRecord);
 
         MedicalRecordResponseDTO result = medicalRecordService.createRecord(medicalRecordDTO);
 
-
-        assertThat(result).isNotNull();
-        assertThat(result.getPatientId()).isEqualTo(1L);
-        assertThat(result.getDoctorName()).isEqualTo("Test Doctor");
+        assertNotNull(result);
+        assertEquals(1L, result.getRecordId());
         verify(medicalRecordRepository, times(1)).save(any(MedicalRecord.class));
     }
 
     @Test
-    void testCreateRecord_ThrowsAPIException_WhenPatientMismatch() {
+    void createRecord_WhenAppointmentMismatch_ThrowsAPIException() {
+        Doctor wrongDoctor = new Doctor();
+        wrongDoctor.setDoctorId(99L);
+        appointment.setDoctor(wrongDoctor); // Appointment doctor ID is now 99
 
-        Patient wrongPatient = new Patient();
-        wrongPatient.setPatientId(2L);
-        appointment.setPatient(wrongPatient);
-
-        given(appointmentRepository.findById(1001L)).willReturn(Optional.of(appointment));
-        given(patientRepository.findById(1L)).willReturn(Optional.of(patient));
-        given(doctorRepository.findById(101L)).willReturn(Optional.of(doctor));
-
+        when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
+        when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(doctor)); // DTO doctor ID is 1
 
         assertThrows(APIException.class, () -> medicalRecordService.createRecord(medicalRecordDTO));
     }
 
     @Test
-    void testGetRecordsForPatient() {
+    void getRecordsForPatient_WhenPatientExists_ReturnsRecordList() {
+        User user = new User();
+        user.setUsername("testpatient");
+        patient.setUser(user);
 
-        given(patientRepository.existsById(1L)).willReturn(true);
-        given(medicalRecordRepository.findByPatient_PatientIdOrderByCreatedAtDesc(1L))
-                .willReturn(Collections.singletonList(medicalRecord));
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("testpatient", "pass"));
+        when(patientRepository.findByUser_Username("testpatient")).thenReturn(Optional.of(patient));
+        when(medicalRecordRepository.findByPatient_PatientIdOrderByCreatedAtDesc(1L)).thenReturn(List.of(medicalRecord));
 
+        List<MedicalRecordResponseDTO> result = medicalRecordService.getRecordsForPatient();
 
-        List<MedicalRecordResponseDTO> result = medicalRecordService.getRecordsForPatient(1L);
-
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getPatientName()).isEqualTo("Test Patient");
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
     }
 }

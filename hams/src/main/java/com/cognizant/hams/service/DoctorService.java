@@ -1,11 +1,8 @@
 package com.cognizant.hams.service;
 
-import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Request.DoctorAvailabilityDTO;
-import com.cognizant.hams.dto.Response.DoctorDetailsResponseDTO;
-import com.cognizant.hams.dto.Response.DoctorAvailabilityResponseDTO;
-import com.cognizant.hams.dto.Request.DoctorDTO;
-import com.cognizant.hams.dto.Response.DoctorResponseDTO;
+import com.cognizant.hams.dto.request.AdminUserRequestDTO;
+import com.cognizant.hams.dto.request.DoctorDTO;
+import com.cognizant.hams.dto.response.DoctorResponseDTO;
 
 import java.util.List;
 
@@ -13,7 +10,7 @@ public interface DoctorService {
 
     // Basic Curd operation
     DoctorResponseDTO createDoctor(AdminUserRequestDTO doctorDto);
-    DoctorResponseDTO getDoctorById(Long doctorId);
+    DoctorResponseDTO getDoctor();
     List<DoctorResponseDTO> getAllDoctor();
     DoctorResponseDTO updateDoctor(Long doctorId,DoctorDTO doctorDto);
     DoctorResponseDTO deleteDoctor(Long doctorId);

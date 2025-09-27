@@ -1,15 +1,16 @@
-package com.cognizant.hams.dto.Request;
+package com.cognizant.hams.dto.request;
 
-import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.UniqueElements;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class DoctorDTO {
+public class AdminUserRequestDTO {
+    private String username;
+    private String password;
+    private String roleName;
     @NotBlank(message = "Doctor name is required")
     private String doctorName;
 
@@ -31,4 +32,5 @@ public class DoctorDTO {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid Email")
     private String email;
+
 }

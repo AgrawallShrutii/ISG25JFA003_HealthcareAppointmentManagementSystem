@@ -1,7 +1,7 @@
 package com.cognizant.hams.controller;
 
-import com.cognizant.hams.dto.Request.MedicalRecordDTO;
-import com.cognizant.hams.dto.Response.MedicalRecordResponseDTO;
+import com.cognizant.hams.dto.request.MedicalRecordDTO;
+import com.cognizant.hams.dto.response.MedicalRecordResponseDTO;
 import com.cognizant.hams.service.MedicalRecordService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +23,10 @@ public class MedicalRecordController {
         MedicalRecordResponseDTO saved = medicalRecordService.createRecord(dto);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
-    @GetMapping("/patient/{patientId}")
+    @GetMapping("/patient")
     @PreAuthorize("hasRole('PATIENT')")
-    public ResponseEntity<List<MedicalRecordResponseDTO>> getRecordsForPatient(@PathVariable Long patientId) {
-        return ResponseEntity.ok(medicalRecordService.getRecordsForPatient(patientId));
+    public ResponseEntity<List<MedicalRecordResponseDTO>> getRecordsForPatient() {
+        return ResponseEntity.ok(medicalRecordService.getRecordsForPatient());
     }
     @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasRole('DOCTOR')")

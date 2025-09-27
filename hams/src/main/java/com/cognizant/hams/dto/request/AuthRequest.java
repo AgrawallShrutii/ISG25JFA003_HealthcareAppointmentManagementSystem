@@ -1,8 +1,7 @@
-package com.cognizant.hams.dto.Request;
+package com.cognizant.hams.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
@@ -31,7 +30,6 @@ public class AuthRequest {
 
     @Email
     @NotBlank
-    @Column(unique = true)
     private String email;
 
     //   private String status;

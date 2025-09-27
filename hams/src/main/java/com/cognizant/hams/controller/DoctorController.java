@@ -1,11 +1,8 @@
 package com.cognizant.hams.controller;
 
-import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Request.DoctorAvailabilityDTO;
-import com.cognizant.hams.dto.Response.DoctorDetailsResponseDTO;
-import com.cognizant.hams.dto.Response.DoctorAvailabilityResponseDTO;
-import com.cognizant.hams.dto.Request.DoctorDTO;
-import com.cognizant.hams.dto.Response.DoctorResponseDTO;
+import com.cognizant.hams.dto.request.AdminUserRequestDTO;
+import com.cognizant.hams.dto.request.DoctorDTO;
+import com.cognizant.hams.dto.response.DoctorResponseDTO;
 import com.cognizant.hams.service.DoctorService;
 import com.cognizant.hams.service.NotificationService;
 import jakarta.validation.Valid;
@@ -18,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/doctor")
+@RequestMapping("/api/doctors")
 @RequiredArgsConstructor
 public class DoctorController {
 
@@ -26,17 +23,17 @@ public class DoctorController {
     private final NotificationService notificationService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DoctorResponseDTO> createDoctor(@Valid @RequestBody AdminUserRequestDTO doctorDTO){
         DoctorResponseDTO savedDoctor = doctorService.createDoctor(doctorDTO);
         return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{doctorId}")
+    @GetMapping
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<DoctorResponseDTO> getDoctorById(@PathVariable("doctorId") Long doctorId){
-        DoctorResponseDTO doctor = doctorService.getDoctorById(doctorId);
+    public ResponseEntity<DoctorResponseDTO> getDoctor(){
+        DoctorResponseDTO doctor = doctorService.getDoctor();
         return new ResponseEntity<>(doctor,HttpStatus.OK);
-
     }
 
     @GetMapping("/get-all-doctors")
@@ -50,7 +47,6 @@ public class DoctorController {
     public ResponseEntity<DoctorResponseDTO> updateDoctor(@PathVariable("doctorId") Long doctorId, @RequestBody DoctorDTO doctorDTO){
         DoctorResponseDTO updateDoctor = doctorService.updateDoctor(doctorId,doctorDTO);
         return new ResponseEntity<>(updateDoctor,HttpStatus.OK);
-
     }
 
     @DeleteMapping("/{doctorId}")

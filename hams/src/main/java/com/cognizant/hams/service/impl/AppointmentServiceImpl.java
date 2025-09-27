@@ -1,7 +1,7 @@
-package com.cognizant.hams.service.Impl;
+package com.cognizant.hams.service.impl;
 
-import com.cognizant.hams.dto.Request.AppointmentDTO;
-import com.cognizant.hams.dto.Response.AppointmentResponseDTO;
+import com.cognizant.hams.dto.request.AppointmentDTO;
+import com.cognizant.hams.dto.response.AppointmentResponseDTO;
 import com.cognizant.hams.entity.Appointment;
 import com.cognizant.hams.entity.AppointmentStatus;
 import com.cognizant.hams.entity.Doctor;
@@ -16,6 +16,9 @@ import com.cognizant.hams.service.NotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,11 +36,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentResponseDTO rejectAppointment(Long doctorId, Long appointmentId, String reason) {
+    public AppointmentResponseDTO rejectAppointment(Long appointmentId, String reason) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Doctor loggedInDoctor = (Doctor) doctorRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "username", currentUsername));
+
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment", "id", appointmentId));
-        if(!appointment.getDoctor().getDoctorId().equals(doctorId)){
-            throw new APIException("Doctor is not authorized to update this appointment");
+
+        if (!appointment.getDoctor().getDoctorId().equals(loggedInDoctor.getDoctorId())) {
+            throw new AccessDeniedException("Doctor is not authorized to update this appointment.");
         }
         appointment.setStatus(AppointmentStatus.REJECTED);
         Appointment saved = appointmentRepository.save(appointment);
@@ -47,26 +57,39 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     @Transactional
-    public AppointmentResponseDTO confirmAppointment(Long doctorId, Long appointmentId) {
+    public AppointmentResponseDTO confirmAppointment(Long appointmentId) {
+        // 1. Get the authenticated doctor's username from the security context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Doctor loggedInDoctor = (Doctor) doctorRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "username", currentUsername));
+
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment", "id", appointmentId));
-        if(!appointment.getDoctor().getDoctorId().equals(doctorId)){
-            throw new APIException("Doctor is not authorized to update this appointment");
+
+        if (!appointment.getDoctor().getDoctorId().equals(loggedInDoctor.getDoctorId())) {
+            throw new AccessDeniedException("Doctor is not authorized to update this appointment.");
         }
+
+        // 5. Update appointment status and save
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         Appointment saved = appointmentRepository.save(appointment);
+
+        // 6. Notify the patient
         notificationService.notifyPatientOnAppointmentDecision(saved, true, null);
+
         return modelMapper.map(saved, AppointmentResponseDTO.class);
     }
-
     @Override
-    public List<AppointmentResponseDTO> getAppointmentsForPatient(Long patientId) {
+    public List<AppointmentResponseDTO> getAppointmentsForPatient() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
 
-        if (!patientRepository.existsById(patientId)) {
-            throw new ResourceNotFoundException("Patient", "Id", patientId);
-        }
+        Patient patient = (Patient) patientRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", "username", currentUsername));
 
-        List<Appointment> appointments = appointmentRepository.findByPatient_PatientId(patientId);
+        List<Appointment> appointments = appointmentRepository.findByPatient_PatientId(patient.getPatientId());
 
         return appointments.stream()
                 .map(appointment -> modelMapper.map(appointment, AppointmentResponseDTO.class))
@@ -74,24 +97,24 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public AppointmentResponseDTO bookAppointment(Long patientId, AppointmentDTO appointmentDTO) {
-        Patient patient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient", "Id", patientId));
+    public AppointmentResponseDTO bookAppointment(AppointmentDTO appointmentDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Patient patient = (Patient) patientRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", "username", currentUsername));
 
         Doctor doctor = doctorRepository.findById(appointmentDTO.getDoctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor", "Id", appointmentDTO.getDoctorId()));
 
         Appointment appointment = modelMapper.map(appointmentDTO, Appointment.class);
-
         appointment.setAppointmentId(null);
         appointment.setVersion(null);
-
         appointment.setStatus(AppointmentStatus.PENDING);
         appointment.setPatient(patient);
         appointment.setDoctor(doctor);
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
-
         notificationService.notifyDoctorOnAppointmentRequest(savedAppointment);
 
         return modelMapper.map(savedAppointment, AppointmentResponseDTO.class);
@@ -99,8 +122,23 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public AppointmentResponseDTO updateAppointment(Long appointmentId, AppointmentDTO appointmentUpdateDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
         Appointment existingAppointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment", "Id", appointmentId));
+
+        String patientUsername = existingAppointment.getPatient().getUser().getUsername();
+        String doctorUsername = existingAppointment.getDoctor().getUser().getUsername();
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isPatient = currentUsername.equals(patientUsername);
+        boolean isDoctor = currentUsername.equals(doctorUsername);
+
+        if (!isAdmin && !isPatient && !isDoctor) {
+            throw new AccessDeniedException("You do not have permission to update this appointment.");
+        }
 
         if (appointmentUpdateDTO.getDoctorId() != null && !existingAppointment.getDoctor().getDoctorId().equals(appointmentUpdateDTO.getDoctorId())) {
             Doctor newDoctor = doctorRepository.findById(appointmentUpdateDTO.getDoctorId())
@@ -108,22 +146,10 @@ public class AppointmentServiceImpl implements AppointmentService {
             existingAppointment.setDoctor(newDoctor);
         }
 
-        if (appointmentUpdateDTO.getAppointmentDate() != null) {
-            existingAppointment.setAppointmentDate(appointmentUpdateDTO.getAppointmentDate());
-        }
-        if (appointmentUpdateDTO.getStartTime() != null) {
-            existingAppointment.setStartTime(appointmentUpdateDTO.getStartTime()); // Updated
-        }
-        if (appointmentUpdateDTO.getEndTime() != null) {
-            existingAppointment.setEndTime(appointmentUpdateDTO.getEndTime());     // Updated
-        }
-        if (appointmentUpdateDTO.getReason() != null) {
-            existingAppointment.setReason(appointmentUpdateDTO.getReason());
-        }
+
         Appointment updatedAppointment = appointmentRepository.save(existingAppointment);
         return modelMapper.map(updatedAppointment, AppointmentResponseDTO.class);
     }
-
 
     @Override
     public AppointmentResponseDTO cancelAppointment(Long appointmentId) {

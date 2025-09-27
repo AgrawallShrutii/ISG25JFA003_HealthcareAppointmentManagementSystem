@@ -1,10 +1,9 @@
 package com.cognizant.hams.controller;
 
-import com.cognizant.hams.dto.Request.AuthRequest;
-import com.cognizant.hams.dto.Response.AuthResponse;
-import com.cognizant.hams.dto.Response.PatientResponseDTO;
+import com.cognizant.hams.dto.request.AuthRequest;
+import com.cognizant.hams.dto.response.AuthResponse;
+import com.cognizant.hams.dto.response.PatientResponseDTO;
 import com.cognizant.hams.entity.Patient;
-import com.cognizant.hams.entity.User;
 import com.cognizant.hams.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

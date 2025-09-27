@@ -1,16 +1,13 @@
-package com.cognizant.hams.service.Impl;
+package com.cognizant.hams.service.impl;
 
-import com.cognizant.hams.dto.Request.PatientDTO;
-import com.cognizant.hams.dto.Response.DoctorResponseDTO;
-import com.cognizant.hams.dto.Response.PatientResponseDTO;
+import com.cognizant.hams.dto.request.PatientDTO;
+import com.cognizant.hams.dto.response.DoctorResponseDTO;
+import com.cognizant.hams.dto.response.PatientResponseDTO;
 import com.cognizant.hams.entity.Patient;
 import com.cognizant.hams.exception.APIException;
 import com.cognizant.hams.exception.ResourceNotFoundException;
-import com.cognizant.hams.repository.AppointmentRepository;
-import com.cognizant.hams.repository.DoctorRepository;
 import com.cognizant.hams.repository.PatientRepository;
 import com.cognizant.hams.service.DoctorService;
-import com.cognizant.hams.service.NotificationService;
 import com.cognizant.hams.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -45,7 +42,6 @@ public class PatientServiceImpl implements PatientService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = authentication.getName();
 
-        // Check if the authenticated user has the ADMIN role
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
@@ -56,7 +52,6 @@ public class PatientServiceImpl implements PatientService {
             throw new AccessDeniedException("You are not authorized to view another patient's details.");
         }
 
-        // If the checks pass, retrieve the patient's details from the repository.
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient", "patientId", patientId));
 
@@ -64,9 +59,13 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public PatientResponseDTO updatePatient(Long patientId, PatientDTO patientUpdateDTO) {
-        Patient existingPatient = patientRepository.findById(patientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient", "patientId", patientId));
+    public PatientResponseDTO updatePatient(PatientDTO patientUpdateDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Patient existingPatient = (Patient) patientRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", "username", currentUsername));
+
         if(patientUpdateDTO.getContactNumber() != null){
             existingPatient.setContactNumber(patientUpdateDTO.getContactNumber());
         }
@@ -88,10 +87,10 @@ public class PatientServiceImpl implements PatientService {
         if(patientUpdateDTO.getDateOfBirth() != null){
             existingPatient.setDateOfBirth(patientUpdateDTO.getDateOfBirth());
         }
+
         Patient updatedPatient = patientRepository.save(existingPatient);
 
         return modelMapper.map(updatedPatient, PatientResponseDTO.class);
-
     }
 
     @Override

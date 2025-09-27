@@ -1,7 +1,7 @@
 package com.cognizant.hams.controller;
 
-import com.cognizant.hams.dto.Request.AppointmentDTO;
-import com.cognizant.hams.dto.Response.AppointmentResponseDTO;
+import com.cognizant.hams.dto.request.AppointmentDTO;
+import com.cognizant.hams.dto.response.AppointmentResponseDTO;
 import com.cognizant.hams.service.AppointmentService;
 import com.cognizant.hams.service.DoctorService;
 import com.cognizant.hams.service.NotificationService;
@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,18 +25,18 @@ public class AppointmentController {
     private final NotificationService notificationService;
     private final AppointmentService appointmentService;
 
-    @PostMapping("/patients/{patientId}/appointments")
+    @PostMapping("/patients/appointments")
+    @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<AppointmentResponseDTO> bookAppointment(
-            @PathVariable("patientId") Long patientId,
             @Valid @RequestBody AppointmentDTO appointmentDTO) {
-        AppointmentResponseDTO newAppointment = appointmentService.bookAppointment(patientId, appointmentDTO);
+        AppointmentResponseDTO newAppointment = appointmentService.bookAppointment(appointmentDTO);
         return new ResponseEntity<>(newAppointment, HttpStatus.CREATED);
     }
 
-    @GetMapping("/patients/{patientId}/status")
-    public ResponseEntity<List<AppointmentResponseDTO>> getAppointmentsForPatient(
-            @PathVariable("patientId") Long patientId) {
-        List<AppointmentResponseDTO> appointments = appointmentService.getAppointmentsForPatient(patientId);
+    @GetMapping("/patients/status")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<List<AppointmentResponseDTO>> getAppointmentsForPatient() {
+        List<AppointmentResponseDTO> appointments = appointmentService.getAppointmentsForPatient();
         return ResponseEntity.ok(appointments);
     }
 
@@ -61,18 +62,17 @@ public class AppointmentController {
         return ResponseEntity.ok(canceledAppointment);
     }
 
-    @PostMapping("/doctors/{doctorId}/appointments/{appointmentId}/confirm")
-    public ResponseEntity<AppointmentResponseDTO> confirmAppointment(@PathVariable Long doctorId, @PathVariable Long appointmentId){
-        AppointmentResponseDTO responseDTO = appointmentService.confirmAppointment(doctorId, appointmentId);
+    @PostMapping("/doctors/appointments/{appointmentId}/confirm")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<AppointmentResponseDTO> confirmAppointment(@PathVariable Long appointmentId){
+        AppointmentResponseDTO responseDTO = appointmentService.confirmAppointment(appointmentId);
         return ResponseEntity.ok(responseDTO);
     }
 
-    @PostMapping("/doctors/{doctorId}/appointments/{appointmentId}/reject")
-    public ResponseEntity<AppointmentResponseDTO> rejectAppointment(@PathVariable Long doctorId,
-                                                                    @PathVariable Long appointmentId,
+    @PostMapping("/doctors/appointments/{appointmentId}/reject")
+    public ResponseEntity<AppointmentResponseDTO> rejectAppointment(@PathVariable Long appointmentId,
                                                                     @RequestParam(value = "reason", required = false) String reason){
-        AppointmentResponseDTO responseDTO = appointmentService.rejectAppointment(doctorId, appointmentId, reason);
+        AppointmentResponseDTO responseDTO = appointmentService.rejectAppointment(appointmentId, reason);
         return ResponseEntity.ok(responseDTO);
     }
-
 }

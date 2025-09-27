@@ -1,6 +1,6 @@
 package com.cognizant.hams.controller;
 
-import com.cognizant.hams.dto.Response.NotificationResponseDTO;
+import com.cognizant.hams.dto.response.NotificationResponseDTO;
 import com.cognizant.hams.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,14 +14,14 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @GetMapping("/patients/{patientId}/notification")
-    public ResponseEntity<List<NotificationResponseDTO>> getPatientNotifications(@PathVariable Long patientId){
-        return ResponseEntity.ok(notificationService.getNotificationForPatient(patientId));
+    @GetMapping("/patients/notification")
+    public ResponseEntity<List<NotificationResponseDTO>> getPatientNotifications(){
+        return ResponseEntity.ok(notificationService.getNotificationForPatient());
     }
 
-    @GetMapping("/doctors/{doctorId}/notification")
-    public ResponseEntity<List<NotificationResponseDTO>> getNotificationsForDoctor(@PathVariable("doctorId") Long doctorId) {
-        List<NotificationResponseDTO> notifications = notificationService.getNotificationForDoctor(doctorId);
+    @GetMapping("/doctors/notification")
+    public ResponseEntity<List<NotificationResponseDTO>> getNotificationsForDoctor() {
+        List<NotificationResponseDTO> notifications = notificationService.getNotificationForDoctor();
         return ResponseEntity.ok(notifications);
     }
 

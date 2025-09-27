@@ -1,7 +1,6 @@
-package com.cognizant.hams.dto.Request;
+package com.cognizant.hams.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.FutureOrPresent;

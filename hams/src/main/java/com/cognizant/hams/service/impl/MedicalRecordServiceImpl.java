@@ -1,7 +1,7 @@
-package com.cognizant.hams.service.Impl;
+package com.cognizant.hams.service.impl;
 
-import com.cognizant.hams.dto.Request.MedicalRecordDTO;
-import com.cognizant.hams.dto.Response.MedicalRecordResponseDTO;
+import com.cognizant.hams.dto.request.MedicalRecordDTO;
+import com.cognizant.hams.dto.response.MedicalRecordResponseDTO;
 import com.cognizant.hams.service.MedicalRecordService;
 
 import com.cognizant.hams.entity.Appointment;
@@ -16,6 +16,8 @@ import com.cognizant.hams.repository.MedicalRecordRepository;
 import com.cognizant.hams.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final ModelMapper modelMapper;
+
     @Override
     public MedicalRecordResponseDTO createRecord(MedicalRecordDTO dto) {
         Appointment appointment = appointmentRepository.findById(dto.getAppointmentId())
@@ -61,13 +64,20 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         resp.setCreatedAt(saved.getCreatedAt());
         return resp;
     }
+
     @Override
-    public List<MedicalRecordResponseDTO> getRecordsForPatient(Long patientId) {
-        if (!patientRepository.existsById(patientId)) {
-            throw new ResourceNotFoundException("Patient", "Id", patientId);
-        }
-        return medicalRecordRepository.findByPatient_PatientIdOrderByCreatedAtDesc(patientId)
-                .stream().map(this::toDto).collect(Collectors.toList());
+    public List<MedicalRecordResponseDTO> getRecordsForPatient() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        Patient patient = (Patient) patientRepository.findByUser_Username(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", "username", currentUsername));
+
+        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByPatient_PatientIdOrderByCreatedAtDesc(patient.getPatientId());
+
+        return medicalRecords.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
     @Override
     public List<MedicalRecordResponseDTO> getRecordsForDoctor(Long doctorId) {

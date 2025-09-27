@@ -1,8 +1,8 @@
 package com.cognizant.hams.service;
 
-import com.cognizant.hams.dto.Request.PatientDTO;
-import com.cognizant.hams.dto.Response.DoctorResponseDTO;
-import com.cognizant.hams.dto.Response.PatientResponseDTO;
+import com.cognizant.hams.dto.request.PatientDTO;
+import com.cognizant.hams.dto.response.DoctorResponseDTO;
+import com.cognizant.hams.dto.response.PatientResponseDTO;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public interface PatientService {
 
     PatientResponseDTO getPatientById(Long patientId);
 
-    PatientResponseDTO updatePatient(Long patientId, PatientDTO patientUpdateDTO);
+    PatientResponseDTO updatePatient(PatientDTO patientUpdateDTO);
 
     PatientResponseDTO deletePatient(Long patientId);
 
@@ -23,12 +23,4 @@ public interface PatientService {
     List<DoctorResponseDTO> searchDoctorBySpecialization(String specialization);
 
 }
-//    AppointmentResponseDTO bookAppointment(Long patientId, AppointmentDTO appointmentDTO);
-//    AppointmentResponseDTO cancelAppointment(Long appointmentId);
-
-//  --- Appointments ---
-//    AppointmentResponseDTO getAppointmentById(Long appointmentId);
-//    AppointmentResponseDTO bookAppointment(Long patientId, AppointmentCreateDTO appointmentCreateDTO);
-//    AppointmentResponseDTO updateAppointment(Long appointmentId, AppointmentUpdateDTO appointmentUpdateDTO);
-//    AppointmentResponseDTO cancelAppointment(Long appointmentId);
 

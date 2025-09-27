@@ -1,7 +1,7 @@
 package com.cognizant.hams.service;
 
-import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Request.AuthRequest;
+import com.cognizant.hams.dto.request.AdminUserRequestDTO;
+import com.cognizant.hams.dto.request.AuthRequest;
 import com.cognizant.hams.entity.Doctor;
 import com.cognizant.hams.entity.Patient;
 import com.cognizant.hams.entity.Role;

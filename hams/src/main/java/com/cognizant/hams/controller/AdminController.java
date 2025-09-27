@@ -1,7 +1,7 @@
 package com.cognizant.hams.controller;
 
-import com.cognizant.hams.dto.Request.AdminUserRequestDTO;
-import com.cognizant.hams.dto.Response.UserResponseDTO;
+import com.cognizant.hams.dto.request.AdminUserRequestDTO;
+import com.cognizant.hams.dto.response.UserResponseDTO;
 import com.cognizant.hams.entity.Doctor;
 import com.cognizant.hams.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,6 @@ public class AdminController {
     }
 
     // Only users with the ADMIN role can access this endpoint
-    // AdminController.java
 
     @PostMapping("/create-user")
     @PreAuthorize("hasRole('ADMIN')")
